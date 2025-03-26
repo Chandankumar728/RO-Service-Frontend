@@ -6,7 +6,7 @@ export default function LoginTitle() {
       {/* logo */}
       <div className="flex justify-center">
         <Image
-          src="/Gym.png"
+          src="/rologo.jpg"
           // src="https://images.unsplash.com/photo-1620288627223-53302f4e8c74?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           width={100}
           height={100}
@@ -21,7 +21,7 @@ export default function LoginTitle() {
       </h1>
       <h1 className="text-2xl font-bold text-center text-primary">
         {/* title */}
-        GymSphere
+        RO serivice
       </h1>
 
       {/* subtitle */}
