@@ -36,37 +36,37 @@ const AdminSideBar = [
   {
     icon: User,
     label: 'Add Owner',
-    path: '/gym-app/registration-form'
+    path: '/ro-service/registration-form'
   },
   {
     icon: List,
     label: 'Owners List',
-    path: '/gym-app/owner-list'
+    path: '/ro-service/owner-list'
   },
   {
     icon: User,
     label: 'Add Member',
-    path: '/gym-app/add-member'
+    path: '/ro-service/add-member'
   },
   {
     icon: List,
     label: 'Plan Master List',
-    path: '/gym-app/masters/plan'
+    path: '/ro-service/masters/plan'
   },
   {
     icon: List,
     label: 'Month Master List',
-    path: '/gym-app/masters/month'
+    path: '/ro-service/masters/month'
   },
   {
     icon: List,
     label: 'Plan Mapping List',
-    path: '/gym-app/masters/plan-mapping'
+    path: '/ro-service/masters/plan-mapping'
   },
   {
     icon: List,
     label: 'Report',
-    path: '/gym-app/month-plan-report'
+    path: '/ro-service/month-plan-report'
   }
 ];
 const SideBar = [
@@ -74,23 +74,23 @@ const SideBar = [
   {
     icon: User,
     label: 'Add Member',
-    path: '/gym-app/add-member'
+    path: '/ro-service/add-member'
   },
   {
     icon: List,
     label: 'Plan Master List',
-    path: '/gym-app/masters/plan'
+    path: '/ro-service/masters/plan'
   },
 
   {
     icon: List,
     label: 'Plan Mapping List',
-    path: '/gym-app/masters/plan-mapping'
+    path: '/ro-service/masters/plan-mapping'
   },
   {
     icon: List,
     label: 'Report',
-    path: '/gym-app/month-plan-report'
+    path: '/ro-service/month-plan-report'
   }
 ];
 
@@ -103,7 +103,7 @@ export default function SideBarMenu({
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const equalPath = ['/gym-app/home'];
+  const equalPath = ['/ro-service/home'];
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -246,7 +246,7 @@ export default function SideBarMenu({
                   <MenubarItem
                     className="flex space-x-2 items-center justify-start"
                     onClick={() => {
-                      navigate('/gym-app');
+                      navigate('/ro-service');
                     }}
                   >
                     <HomeIcon className="h-5 w-5" />
@@ -255,7 +255,7 @@ export default function SideBarMenu({
                   <MenubarItem
                     className="flex space-x-2 items-center justify-start"
                     onClick={() => {
-                      navigate('/gym-app/profile');
+                      navigate('/ro-service/profile');
                     }}
                   >
                     <CircleUserRound className="h-5 w-5" />

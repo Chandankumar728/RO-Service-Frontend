@@ -17,7 +17,7 @@ export default function StudentLayout() {
         <footer className="fixed bottom-0 w-full bg-background border-t sm:bg-transparent sm:px-6">
           <Sheet>
             <div className="flex justify-around items-center py-2">
-              <Link to="/gym-app">
+              <Link to="/ro-service">
                 <div className="flex flex-col items-center justify-center">
                   <Home
                     size={24}
@@ -34,7 +34,7 @@ export default function StudentLayout() {
                   </span>
                 </div>
               </Link>
-              <Link to="/gym-app/receipt-list">
+              <Link to="/ro-service/receipt-list">
                 <div className="flex flex-col items-center justify-center">
                   <ReceiptIndianRupee
                     size={24}
@@ -52,7 +52,7 @@ export default function StudentLayout() {
                 </div>
               </Link>
 
-              <Link to="/gym-app/member-list">
+              <Link to="/ro-service/member-list">
                 <div className="flex flex-col items-center justify-center">
                   <List
                     size={24}

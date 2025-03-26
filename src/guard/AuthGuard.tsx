@@ -40,7 +40,7 @@ export default function AuthGuard({
     if (pathname !== requestedLocation) {
       setRequestedLocation(pathname);
     }
-    return <Navigate to="/gym-app" />;
+    return <Navigate to="/ro-service" />;
   }
 
   // if (isAuthenticated && !path?.includes(pathname)) {

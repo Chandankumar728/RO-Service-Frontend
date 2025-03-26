@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { StudentLayout, AuthLayout } from '@/layouts';
+import { StudentLayout, AuthLayout, AdminLayout } from '@/layouts';
 import { AuthGuard, GuestGuard } from '@/guard';
 import NotFound from '@/pages/errors/NotFound';
 import routes from './allRoutes';
@@ -8,15 +8,15 @@ export default function AllRoutes() {
   return (
     <Routes>
       <Route
-        path="/gym-app"
-        element={<Navigate to="/gym-app/landing-page" />}
-        // element={<Navigate to="/gym-app/auth/login" />}
+        path="/ro-service"
+        element={<Navigate to="/ro-service/landing-page" />}
+        // element={<Navigate to="/ro-service/auth/login" />}
         index={true}
       />
 
       {/*************************************Auth Routes********************************************/}
       <Route
-        path="/gym-app/auth"
+        path="/ro-service/auth"
         element={
           <GuestGuard>
             <AuthLayout />
@@ -34,7 +34,7 @@ export default function AllRoutes() {
 
       {/*************************************GYM Routes********************************************/}
       <Route
-        path="/gym-app"
+        path="/ro-service"
         element={
           <AuthGuard>
             <StudentLayout />
@@ -43,7 +43,25 @@ export default function AllRoutes() {
       >
         {routes?.map(
           ({ layout, pages }) =>
-            layout === 'gym-app' &&
+            layout === 'tecnician' &&
+            pages?.map(({ id, path, element }) => (
+              <Route key={id} path={path} element={element} />
+            ))
+        )}
+      </Route>
+
+{/* admin */}
+      <Route
+        path="/ro-service"
+        element={
+          <AuthGuard>
+            <AdminLayout />
+          </AuthGuard>
+        }
+      >
+        {routes?.map(
+          ({ layout, pages }) =>
+            layout == 'admin' &&
             pages?.map(({ id, path, element }) => (
               <Route key={id} path={path} element={element} />
             ))
@@ -51,7 +69,7 @@ export default function AllRoutes() {
       </Route>
 
       {/*************************************Guest Routes********************************************/}
-      <Route path="/gym-app">
+      <Route path="/ro-service">
         {routes?.map(
           ({ layout, pages }) =>
             layout === 'guest' &&
@@ -63,7 +81,7 @@ export default function AllRoutes() {
 
       {/***************************************404 Routes****************************************************/}
       <Route path="*" element={<NotFound />} />
-      <Route path="" element={<Navigate to="/gym-app" replace />} />
+      <Route path="" element={<Navigate to="/ro-service" replace />} />
     </Routes>
   );
 }

@@ -102,7 +102,7 @@ export default function LoginForm() {
         </div> */}
 {/* 
         <div className="text-center">
-          <Link to="/gym-app/auth/forget-password">
+          <Link to="/ro-service/auth/forget-password">
             <span className="text-sm text-primary">Forget password?</span>
           </Link>
         </div> */}
