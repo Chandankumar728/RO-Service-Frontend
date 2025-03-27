@@ -103,7 +103,7 @@ export default function SideBarMenu({
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const equalPath = ['/ro-service/home'];
+  const equalPath = ['/ro-service/tech-home'];
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -112,7 +112,7 @@ export default function SideBarMenu({
   
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background ">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
           {currentSidebar.map((item, index) => (
             <Tooltip key={index + 1}>
@@ -147,7 +147,7 @@ export default function SideBarMenu({
         </nav>
       </aside>
 
-      <div className="flex flex-col sm:gap-4 sm:pl-14">
+      <div className="flex flex-col sm:gap-4">
         <HeadRoom>
           <header
             className={`flex bg-background py-3 border-b items-center gap-4 px-4 sm:px-6`}
@@ -162,7 +162,7 @@ export default function SideBarMenu({
                 </button>
               ) : (
                 <SheetTrigger asChild className="w-8 h-8">
-                  <Button size="icon" variant="outline" className="sm:hidden">
+                  <Button size="icon" variant="outline">
                     {/* <PanelLeft className="h-5 w-5" /> */}
                     <Menu className="w-6 h-6 text-primary" />
                     <span className="sr-only">Toggle Menu</span>

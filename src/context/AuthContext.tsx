@@ -33,9 +33,11 @@ const AuthContext = () => {
       if (accessToken) {
         setSession(accessToken);
         const response = await axios.get(authApi.getUser);
+        console.log('response?.data?.userDetails', response?.data);
         if (response?.data?.success) {
           setIsAuthenticated(true);
           setIsInitialized(true);
+          console.log('response?.data?.userDetails', response?.data);
           setUser(response?.data?.userDetails);
         } else {
           setIsAuthenticated(false);

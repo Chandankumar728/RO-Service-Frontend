@@ -45,6 +45,9 @@ const LandingPage = lazyWithRetries(() => import('@/pages/ro-service/guest/landi
 // -------------------------------Admin--------------------------------
 const AdminHome = lazyWithRetries(() => import('@/pages/ro-service/admin/home'));
 const CreateUser = lazyWithRetries(() => import('@/pages/ro-service/admin/create-user'));
+const RoleMaster = lazyWithRetries(() => import('@/pages/ro-service/admin/role'));
+const ServiceMaster = lazyWithRetries(() => import('@/pages/ro-service/admin/service-type'));
+const UserMaster = lazyWithRetries(() => import('@/pages/ro-service/admin/users'));
 
 
 
@@ -131,6 +134,27 @@ const routes: Route[] = [
         name: 'Home',
         path: 'create-user',
         element: <CreateUser />,
+        exact: true
+      },
+      {
+        id: '3',
+        name: 'Role',
+        path: 'role-master',
+        element: <RoleMaster />,
+        exact: true
+      },
+      {
+        id: '4',
+        name: 'Service',
+        path: 'service-master',
+        element: <ServiceMaster />,
+        exact: true
+      },
+      {
+        id: '5',
+        name: 'User',
+        path: 'user',
+        element: <UserMaster />,
         exact: true
       },
     ]

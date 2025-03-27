@@ -11,7 +11,7 @@ export default function StudentLayout() {
       <div className="mb-16">
         <Outlet />
       </div>
-      {['home', 'profile', 'notification', 'library-home'].includes(
+      {['tech-home', 'profile', 'notification', 'library-home'].includes(
         `${path}`
       ) && (
         <footer className="fixed bottom-0 w-full bg-background border-t sm:bg-transparent sm:px-6">
