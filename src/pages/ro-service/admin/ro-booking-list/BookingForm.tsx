@@ -9,8 +9,6 @@ import {
   RHFTextField,
   FormProviders,
   RHFTextArea,
-  RHFUploadFiled,
-  RHFSelectField,
 } from "@/components/forms";
 import { Separator } from "@/components/ui/separator";
 import EditDialogBox from "@/components/edit-dialog-box";
@@ -20,16 +18,16 @@ import {
   usePutMutation,
 } from "@/hooks/useCustomQuery";
 import { roApi } from "@/lib";
-import { I_USER_TYPE_VIEW } from "./type";
+import { I_BOOKING_VIEW } from "./type";
 
 const schema = yup.object().shape({
-  roleId: yup.string().required("Role name is required"),
   fullName: yup.string().required("Role name is required"),
   address: yup.string().required("address is required"),
   email: yup.string().required("address is required"),
-  mobile: yup.string().required("mobile is required"),
-  password: yup.string(),
-  imageUrl: yup.mixed(),
+  phoneNumber: yup.string().required("mobile is required"),
+  serviceType: yup.string().required("service is required"),
+  preferredDate: yup.string().required("date is required"),
+  additionalInfo: yup.string().required("message is required"),
 });
 type FormData = yup.InferType<typeof schema>;
 
@@ -43,7 +41,7 @@ type Props = {
   refetch?: () => void;
 };
 
-export default function UserForm({
+export default function BookingForm({
   open,
   setOpen,
   title,
@@ -54,16 +52,11 @@ export default function UserForm({
 }: Readonly<Props>) {
   const postMutation = usePostMutation({});
   const putMutation = usePutMutation({});
-  const { data, isFetching } = useApi<I_USER_TYPE_VIEW>({
-    api: `${roApi.getUserById}/${id}`,
+  const { data, isFetching } = useApi<I_BOOKING_VIEW>({
+    api: `${roApi.getRoleById}/${id}`,
+    key: "getBookingById",
     options: {
       enabled: edit,
-    },
-  });
-  const roleList = useApi<any>({
-    api: `${roApi.getAllRole}?page=1&limit=10`,
-    options: {
-      enabled: true,
     },
   });
 
@@ -72,50 +65,44 @@ export default function UserForm({
       fullName: "",
       address: "",
       email: "",
-      mobile: "",
-      password: "",
-      imageUrl: null,
+      phoneNumber: "",
+      serviceType: "",
+      preferredDate: "",
+      additionalInfo: "",
     },
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data: FormData) => {
     try {
-      const formData = new FormData();
-      formData.append("roleId", data.roleId);
-      formData.append("fullName", data.fullName);
-      formData.append("address", data.address);
-      formData.append("email", data.email);
-      formData.append("mobile", data.mobile);
-      if (data.imageUrl) formData.append("imageUrl", data.imageUrl);
-      if (data.password) formData.append("password", data.password);
-
       if (edit && data) {
         const res = await putMutation.mutateAsync({
-          api: `${roApi.updateUserwithImage}/${id}`,
-          data: formData,
+          api: `${roApi.updateBookingRoService}/${id}`,
+          data: data,
         });
         if (res.data?.success) {
           toast.success(res?.data?.message);
         } else {
-          toast.error("User not updated successfully");
+          toast.error("Booking not updated successfully");
         }
       } else {
         const res = await postMutation.mutateAsync({
-          api: roApi.createUserswithImage,
-          data: formData,
+          api: roApi.roBokkingCitizen,
+          data: data,
         });
         if (res.data?.success) {
           toast.success(res?.data?.message);
         } else {
-          toast.error("User not created successfully");
+          toast.error("Booking not created successfully");
         }
         methods.reset({
           fullName: "",
           address: "",
           email: "",
-          mobile: "",
-          password: "",
+          phoneNumber: "",
+          serviceType: "",
+          preferredDate: "",
+          additionalInfo: "",
         });
       }
       setOpen(false);
@@ -127,21 +114,23 @@ export default function UserForm({
   };
   useEffect(() => {
     if (edit && data) {
-      console.log(data);
       methods.reset({
-        roleId: data?.userDetails?.roleId,
-        fullName: data?.userDetails?.fullName,
-        address: data?.userDetails?.address,
-        email: data?.userDetails?.email,
-        mobile: data?.userDetails?.mobile,
+        fullName: data.data.fullName,
+        phoneNumber: data.data.phoneNumber,
+        address: data.data.phoneNumber,
+        serviceType: data.data.serviceType,
+        preferredDate: data.data.preferredDate,
+        additionalInfo: data.data.additionalInfo,
       });
     } else {
       methods.reset({
         fullName: "",
-        email: "",
         address: "",
-        password: "",
-        mobile: "",
+        email: "",
+        phoneNumber: "",
+        serviceType: "",
+        preferredDate: "",
+        additionalInfo: "",
       });
     }
   }, [edit, data]);
@@ -159,41 +148,30 @@ export default function UserForm({
         methods={methods}
         onSubmit={methods.handleSubmit(onSubmit)}
       >
+
+
+
         <div className="grid grid-cols-1 gap-x-2 gap-y-4">
-          {!edit && (
-            <div>
-              <RHFSelectField
-                name="roleId"
-                data={roleList?.data?.data?.docs?.map((item: any) => ({
-                  label: item.roleName,
-                  value: item._id,
-                }))}
-              />
-            </div>
-          )}
-
           <div>
-            <RHFTextField name="fullName" placeholder="Enter your user name" />
+            <RHFTextField name="fullName" placeholder="Enter your  name" />
           </div>
           <div>
-            <RHFTextArea name="address" placeholder="Enter your address" />
-          </div>
-
-          <div>
-            <RHFTextField name="email" placeholder="Enter your email" />
+            <RHFTextArea name="address" placeholder="Enter your  address" />
           </div>
           <div>
-            <RHFTextField name="mobile" placeholder="Enter your mobile" />
+            <RHFTextField name="phoneNumber" placeholder="Enter your  no" />
           </div>
-          {!edit && (
-            <div>
-              <RHFTextField name="password" placeholder="Enter your password" />
-            </div>
-          )}
           <div>
-            <RHFUploadFiled name="imageUrl" placeholder="Upload " />
+            <RHFTextField name="email" placeholder="Enter your  email" />
+          </div>
+          <div>
+            <RHFTextField name="preferredDate" placeholder="Enter your  preferredDate" />
+          </div>
+          <div>
+            <RHFTextField name="additionalInfo" placeholder="Enter your  additionalInfo" />
           </div>
 
+         
           <Separator />
           <div>
             <ButtonLoading

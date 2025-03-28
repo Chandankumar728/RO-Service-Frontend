@@ -61,7 +61,7 @@ export const menuItems = [
         </svg>
       ),
       submenu: [
-        { name: "Active Services", url: "#" },
+        { name: "Booking List", url: "booking-list" },
         { name: "Maintenance", url: "#" },
         { name: "New Requests", url: "#" },
       ],

@@ -52,9 +52,18 @@ export const roApi = {
 
   // users api list 
   createUserswithImage :"/user/create-user-with-img",
-
+  updateUserwithImage:"/user/update-user-with-image",
 
 
   //===========================RO SERVICE API===============================
   roBokkingCitizen: "/guest-booking/citizen-booking",
+  // ====================ro booking api=====================================
+  getAllBookingList:"/booking/get-all-booking",
+  findBookingRoService:"/booking/get-booking-by-id",
+  updateBookingRoService:"/booking/update-booking-by-id",
+  deleteBooking:"/booking/delete-booking-by-id",
+  findBookingByApplicationNo:"/booking/track-applicationByNo",
+  getBookingListByTechnicianId:"/booking/get-booking-list-by-technician-id",
+
+  getAllTechnicianOnly: '/technician/get-all-technician',
 } as const;

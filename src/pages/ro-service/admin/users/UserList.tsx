@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table'
 import UserForm from './UserForm'
 import { useApi,  usePutMutation } from '@/hooks/useCustomQuery'
-import { getErrorMessage, roApi } from '@/lib'
+import { BASE_URI, getErrorMessage, roApi } from '@/lib'
 import { I_USER_LIST } from './type'
 import PaginationComponent from '@/components/pagination'
 import { Separator } from '@/components/ui/separator'
@@ -26,6 +26,7 @@ import SearchBox from '@/components/search-box'
 import Spinner from '@/components/loaders/Spinner'
 import { Switch } from "@headlessui/react";
 import toast from 'react-hot-toast'
+import { Image } from '@/components/image'
 
 export default function HomePage() {
   const [page, setPage] = useState<number>(1)
@@ -124,6 +125,7 @@ export default function HomePage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className=''>#</TableHead>
+                      <TableHead className=''>Image</TableHead>
                       <TableHead className=''>User Name</TableHead>
                       <TableHead className=''>Mobile</TableHead>
                       <TableHead className=''>Email</TableHead>
@@ -136,6 +138,14 @@ export default function HomePage() {
                     {userData?.data?.data?.docs?.map((user, index) => (
                       <TableRow key={user?._id}>
                         <TableCell>{((page * perPage) - perPage) + index + 1}</TableCell>
+                        <TableCell>
+                          <Image
+                            src={`${BASE_URI}/${user?.imageUrl}`}
+                            alt={user?.fullName}
+                            width={50}
+                            height={50}
+                          />
+                        </TableCell>
                         <TableCell>{user?.fullName}</TableCell>
                         <TableCell>{user?.mobile}</TableCell>
                         <TableCell>{user?.email}</TableCell>

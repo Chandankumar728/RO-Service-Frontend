@@ -1,6 +1,6 @@
-
-
-import { useState } from "react"
+import { useState } from "react";
+import * as yup from "yup";
+import toast from "react-hot-toast";
 import {
   PhoneCall,
   Check,
@@ -13,86 +13,111 @@ import {
   PenToolIcon as Tool,
   Wrench,
   Calendar,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import rologo from "./rologo.jpg"
-import rolanding from "./rolanding.jpg"
+} from "lucide-react";
+
+import { useApi, usePostMutation } from "@/hooks/useCustomQuery";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Textarea } from "@/components/ui/textarea";
+// import rologo from "./rologo.jpg";
+// import rolanding from "./rolanding.jpg";
+import { roApi } from "@/lib";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  ButtonLoading,
+  FormProviders,
+  RHFSelectField,
+  RHFTextArea,
+  RHFTextField,
+} from "@/components/forms";
+import { Confirm } from "@/components/react-confirm-box";
+import Modal from "./Modal";
+
+const schema = yup.object().shape({
+  fullName: yup.string().required("Role name is required"),
+  address: yup.string().required("address is required"),
+  email: yup.string().required("address is required"),
+  phoneNumber: yup.string().required("mobile is required"),
+  serviceType: yup.string().required("service is required"),
+  preferredDate: yup.string().required("date is required"),
+  additionalInfo: yup.string().required("message is required"),
+});
+type FormData = yup.InferType<typeof schema>;
 export default function LandingPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [formData, setFormData] = useState<any>({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    service: "",
-    date: "",
-    message: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const postMutation = usePostMutation({});
+  const [trackingId, setTrackingId] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Handle form input changes
-  const handleInputChange = (e:any) => {
-    const { id, value } = e.target
-    setFormData((prevState:any) => ({
-      ...prevState,
-      [id]: value,
-    }))
-  }
+  
+ 
 
-  // Handle select changes
-  const handleSelectChange = (value:any, field:any) => {
-    setFormData((prevState:any) => ({
-      ...prevState,
-      [field]: value,
-    }))
-  }
+  const { data } = useApi<any>({
+    api: `${roApi.getAllService}`,
+    options: {
+      enabled: true,
+    },
+  });
 
-  // Handle form submission
-  const handleSubmit = (e:any) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const methods = useForm<FormData>({
+    defaultValues: {
+      fullName: "",
+      address: "",
+      email: "",
+      phoneNumber: "",
+      serviceType: "",
+      preferredDate: "",
+      additionalInfo: "",
+    },
+    resolver: yupResolver(schema),
+  });
 
-    // Validate form data
-    const requiredFields = ["name", "phone", "email", "address", "service", "date"]
-    const isValid = requiredFields.every((field) => formData[field].trim() !== "")
+  const onSubmit = async (data: FormData) => {
+    Confirm(
+      "Are you sure?",
+      "Do you want to proceed with booking?",
+      async () => {
+        try {
+          const res = await postMutation.mutateAsync({
+            api: roApi.roBokkingCitizen,
+            data: data,
+          });
 
-    if (isValid) {
-      // Simulate form submission
-      setTimeout(() => {
-        setIsSubmitting(false)
-        setSubmitSuccess(true)
+          if (res.data?.success) {
+            toast.success(res.data.message || "Booking successful!");
 
-        // Reset form after 3 seconds
-        setTimeout(() => {
-          setSubmitSuccess(false)
-          setFormData({
-            name: "",
-            phone: "",
-            email: "",
-            address: "",
-            service: "",
-            date: "",
-            message: "",
-          })
-        }, 3000)
-      }, 1500)
-    } else {
-      setIsSubmitting(false)
-      alert("Please fill in all required fields")
-    }
-  }
+            // ✅ Store tracking ID and show success modal
+            setTrackingId(res.data.applicationNo || "N/A");
+            setShowSuccessModal(true);
+
+            // ✅ Reset form after success
+            methods.reset({
+              fullName: "",
+              address: "",
+              email: "",
+              phoneNumber: "",
+              serviceType: "",
+              preferredDate: "",
+              additionalInfo: "",
+            });
+          } else {
+            toast.error(res.data?.message || "Booking failed.");
+          }
+        } catch (error) {
+          toast.error("Something went wrong. Please try again.");
+        }
+      }
+    );
+  };
 
   // Smooth scroll to section
-  const scrollToSection = (sectionId:any) => {
-    const section = document.getElementById(sectionId)
-    section?.scrollIntoView({ behavior: "smooth" })
-    setIsMenuOpen(false)
-  }
+  const scrollToSection = (sectionId: any) => {
+    const section = document.getElementById(sectionId);
+    section?.scrollIntoView({ behavior: "smooth" });
+    setIsMenuOpen(false);
+  };
 
   // Testimonials data
   const testimonials = [
@@ -117,31 +142,35 @@ export default function LandingPage() {
         "Quick response time and affordable pricing. The technician was knowledgeable and fixed our RO system efficiently.",
       rating: 4,
     },
-  ]
+  ];
 
   // Services data
   const services = [
     {
       title: "RO Installation",
-      description: "Professional installation of new RO water purifiers with proper setup and testing.",
+      description:
+        "Professional installation of new RO water purifiers with proper setup and testing.",
       icon: <Droplets className="h-10 w-10 text-blue-500" />,
     },
     {
       title: "Maintenance & Service",
-      description: "Regular maintenance, filter replacement, and comprehensive service packages.",
+      description:
+        "Regular maintenance, filter replacement, and comprehensive service packages.",
       icon: <Tool className="h-10 w-10 text-blue-500" />,
     },
     {
       title: "Repair & Troubleshooting",
-      description: "Expert diagnosis and repair of all types of RO system issues and malfunctions.",
+      description:
+        "Expert diagnosis and repair of all types of RO system issues and malfunctions.",
       icon: <Wrench className="h-10 w-10 text-blue-500" />,
     },
     {
       title: "Annual Maintenance Contract",
-      description: "Yearly maintenance plans with priority service and discounted parts replacement.",
+      description:
+        "Yearly maintenance plans with priority service and discounted parts replacement.",
       icon: <Calendar className="h-10 w-10 text-blue-500" />,
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -150,13 +179,19 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <img src={rologo} alt="RO Service Logo" className="h-10 w-10 rounded" />
-              <span className="font-bold text-xl">AquaPure RO Services</span>
+              {/* <img src={rologo} alt="RO Service Logo" className="h-10 w-10 rounded" /> */}
+              <span className="font-bold text-xl">juidco</span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex space-x-6">
-              {["Services", "Installation", "Booking", "Testimonials", "Contact"].map((section) => (
+              {[
+                "Services",
+                "Installation",
+                "Booking",
+                "Testimonials",
+                "Contact",
+              ].map((section) => (
                 <button
                   key={section}
                   onClick={() => scrollToSection(section.toLowerCase())}
@@ -175,7 +210,11 @@ export default function LandingPage() {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="outline-none" aria-label="Toggle menu">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="outline-none"
+                aria-label="Toggle menu"
+              >
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -183,7 +222,12 @@ export default function LandingPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  ></path>
                 </svg>
               </button>
             </div>
@@ -192,7 +236,13 @@ export default function LandingPage() {
           {/* Mobile Navigation */}
           {isMenuOpen && (
             <div className="md:hidden mt-3 pb-3 space-y-2">
-              {["Services", "Installation", "Booking", "Testimonials", "Contact"].map((section) => (
+              {[
+                "Services",
+                "Installation",
+                "Booking",
+                "Testimonials",
+                "Contact",
+              ].map((section) => (
                 <button
                   key={section}
                   onClick={() => scrollToSection(section.toLowerCase())}
@@ -201,7 +251,10 @@ export default function LandingPage() {
                   {section}
                 </button>
               ))}
-              <a href="/admin" className="block bg-white text-blue-600 p-2 rounded">
+              <a
+                href="/admin"
+                className="block bg-white text-blue-600 p-2 rounded"
+              >
                 Admin Login
               </a>
             </div>
@@ -214,9 +267,12 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">Pure Water, Healthier Life</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                Pure Water, Healthier Life
+              </h1>
               <p className="text-xl mb-6">
-                Ranchi's most trusted RO service provider with expert installation, maintenance, and repair services.
+                Ranchi's most trusted RO service provider with expert
+                installation, maintenance, and repair services.
               </p>
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <Button
@@ -229,7 +285,7 @@ export default function LandingPage() {
                 <Button
                   onClick={() => scrollToSection("services")}
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-blue-600"
+                  className="border-white text-blue-600 hover:bg-white hover:text-blue-600"
                   size="lg"
                 >
                   Our Services
@@ -237,11 +293,11 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="md:w-1/2">
-              <img
+              {/* <img
                 src={rolanding}
                 alt="RO Water Purifier"
                 className="w-full h-auto md:h-96 rounded-lg shadow-lg"
-              />
+              /> */}
             </div>
           </div>
         </div>
@@ -251,19 +307,26 @@ export default function LandingPage() {
       <div id="services" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Services</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">
+              Our Services
+            </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We provide comprehensive water purification solutions to ensure you always have access to clean, safe
-              drinking water.
+              We provide comprehensive water purification solutions to ensure
+              you always have access to clean, safe drinking water.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services.map((service, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-shadow duration-300"
+              >
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-4">{service.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {service.title}
+                  </h3>
                   <p className="text-gray-600">{service.description}</p>
                 </CardContent>
               </Card>
@@ -277,17 +340,19 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/3">
-              <img
+              {/* <img
                 src={rolanding}
                 alt="RO Installation Process"
                 className="h-[50%] w-full object-cover rounded-lg shadow-lg"
-              />
+              /> */}
             </div>
             <div className="lg:w-1/2">
-              <h2 className="text-3xl font-bold text-gray-800 mb-6">Professional RO Installation</h2>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                Professional RO Installation
+              </h2>
               <p className="text-gray-600 mb-6">
-                Our expert technicians ensure proper installation of your RO system for optimal performance and
-                longevity.
+                Our expert technicians ensure proper installation of your RO
+                system for optimal performance and longevity.
               </p>
               <div className="space-y-4">
                 {[
@@ -315,153 +380,208 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
-      {/* Booking Section */}
-      <div id="booking" className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Book New RO Service</h2>
-          <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-            {submitSuccess ? (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-                  <Check className="h-8 w-8 text-green-600" />
+      <FormProviders
+        methods={methods}
+        onSubmit={methods.handleSubmit(onSubmit)}
+      >
+        {/* Booking Section */}
+        <div id="booking" className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+              Book New RO Service
+            </h2>
+            <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Full Name*
+                  </label>
+                  <RHFTextField
+                    name="fullName"
+                    placeholder="Enter your mobile"
+                  />
                 </div>
-                <h3 className="text-2xl font-bold text-green-600 mb-2">Thank You!</h3>
-                <p className="text-gray-600">
-                  Your booking request has been submitted successfully. We'll contact you shortly to confirm your
-                  appointment.
-                </p>
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Phone Number*
+                  </label>
+                  <RHFTextField
+                    name="phoneNumber"
+                    placeholder="Enter your mobile"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Email Address*
+                  </label>
+                  <RHFTextField name="email" placeholder="Enter your email" />
+                </div>
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Additional Info*
+                  </label>
+                  <RHFTextField
+                    name="additionalInfo"
+                    placeholder="Enter your Additional Info"
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Service Type*
+                  </label>
+                  <RHFSelectField
+                    name="serviceType"
+                    data={data?.data?.docs?.map((item: any) => ({
+                      label: item.serviceTypeName,
+                      value: item._id,
+                    }))}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="date"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Preferred Date*
+                  </label>
+                  <RHFTextField
+                    type="date"
+                    name="preferredDate"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-gray-700 font-medium mb-2"
+                  >
+                    Address*
+                  </label>
+                  <RHFTextArea
+                    name="address"
+                    placeholder="Enter full Address"
+                    rows={4}
+                  />
+                </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-                      Full Name*
-                    </label>
-                    <Input
-                      type="text"
-                      id="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Your Name"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">
-                      Phone Number*
-                    </label>
-                    <Input
-                      type="tel"
-                      id="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="Your Phone Number"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-                      Email Address*
-                    </label>
-                    <Input
-                      type="email"
-                      id="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="Your Email"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="address" className="block text-gray-700 font-medium mb-2">
-                      Address*
-                    </label>
-                    <Input
-                      type="text"
-                      id="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="Your Address"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="service" className="block text-gray-700 font-medium mb-2">
-                      Service Type*
-                    </label>
-                    <Select value={formData.service} onValueChange={(value) => handleSelectChange(value, "service")}>
-                      <SelectTrigger id="service">
-                        <SelectValue placeholder="Select Service" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new-installation">New RO Installation</SelectItem>
-                        <SelectItem value="maintenance">Maintenance & Service</SelectItem>
-                        <SelectItem value="repair">Repair & Troubleshooting</SelectItem>
-                        <SelectItem value="amc">Annual Maintenance Contract</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label htmlFor="date" className="block text-gray-700 font-medium mb-2">
-                      Preferred Date*
-                    </label>
-                    <Input
-                      type="date"
-                      id="date"
-                      value={formData.date}
-                      onChange={handleInputChange}
-                      required
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label htmlFor="message" className="block text-gray-700 font-medium mb-2">
-                      Additional Information
-                    </label>
-                    <Textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      placeholder="Any specific requirements or questions?"
-                      rows={4}
-                    />
-                  </div>
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full py-6 text-lg">
-                  {isSubmitting ? "Submitting..." : "Book Service"}
-                </Button>
-              </form>
-            )}
+
+              <div>
+                <ButtonLoading
+                  isLoading={methods.formState.isSubmitting}
+                  type="submit"
+                  className="h-11 w-full rounded-xl"
+                >
+                  Submit
+                </ButtonLoading>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </FormProviders>
+
+      {/* modal content */}
+      {showSuccessModal && (
+        <Modal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+        >
+          <div className="p-6 text-center">
+            {/* ✅ Success Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-green-100 text-green-600 rounded-full p-3">
+                ✅
+              </div>
+            </div>
+
+            {/* ✅ Title with Gradient Effect */}
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-400 text-transparent bg-clip-text">
+              RO Service Booking Confirmed!
+            </h2>
+
+            {/* ✅ Informative Message */}
+            <p className="text-gray-700 mt-3">
+              Your RO service booking has been successfully submitted.
+            </p>
+            <p className="text-gray-600 mt-2">
+              Please{" "}
+              <span className="font-semibold text-blue-500">
+                keep your application number
+              </span>{" "}
+              safe to track the status of your booking.
+            </p>
+
+            {/* ✅ Application Number Highlight */}
+            <div className="mt-4 px-6 py-3 bg-gray-100 border border-gray-300 rounded-lg inline-block">
+              <span className="text-gray-800 font-bold">Application No:</span>
+              <span className="text-indigo-600 font-extrabold text-lg ml-2">
+                {trackingId}
+              </span>
+            </div>
+
+            {/* ✅ Animated Button */}
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="mt-5 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 transition-all duration-300 ease-in-out text-white rounded-full shadow-lg"
+            >
+              OK, Got It!
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* Testimonials Section */}
       <div id="testimonials" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">What Our Customers Say</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+            What Our Customers Say
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-shadow duration-300"
+              >
                 <CardContent className="p-6">
                   <div className="flex mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-5 w-5 ${i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                        className={`h-5 w-5 ${
+                          i < testimonial.rating
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }`}
                       />
                     ))}
                   </div>
-                  <p className="text-gray-600 mb-4 italic">"{testimonial.content}"</p>
+                  <p className="text-gray-600 mb-4 italic">
+                    "{testimonial.content}"
+                  </p>
                   <div className="flex items-center">
                     <div className="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center text-blue-600 font-bold">
                       {testimonial.name.charAt(0)}
                     </div>
                     <div className="ml-3">
                       <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.role}</p>
+                      <p className="text-sm text-gray-500">
+                        {testimonial.role}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -474,34 +594,45 @@ export default function LandingPage() {
       {/* Features Section */}
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Why Choose Us</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+            Why Choose Us
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
                 icon: <Shield className="h-10 w-10 text-blue-500" />,
                 title: "Quality Assurance",
-                description: "We use only genuine parts and follow industry best practices for all services.",
+                description:
+                  "We use only genuine parts and follow industry best practices for all services.",
               },
               {
                 icon: <Clock className="h-10 w-10 text-blue-500" />,
                 title: "Prompt Service",
-                description: "Our technicians arrive on time and complete the work efficiently.",
+                description:
+                  "Our technicians arrive on time and complete the work efficiently.",
               },
               {
                 icon: <Star className="h-10 w-10 text-blue-500" />,
                 title: "Expert Technicians",
-                description: "Our team consists of certified and experienced professionals.",
+                description:
+                  "Our team consists of certified and experienced professionals.",
               },
               {
                 icon: <PhoneCall className="h-10 w-10 text-blue-500" />,
                 title: "24/7 Support",
-                description: "We're available round the clock for emergency service requests.",
+                description:
+                  "We're available round the clock for emergency service requests.",
               },
             ].map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-shadow duration-300"
+              >
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {feature.title}
+                  </h3>
                   <p className="text-gray-600">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -521,7 +652,10 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Call Us</h3>
               <p className="mb-2">For quick inquiries and bookings</p>
-              <a href="tel:+919876543210" className="text-xl font-bold hover:underline">
+              <a
+                href="tel:+919876543210"
+                className="text-xl font-bold hover:underline"
+              >
                 +91 98765 43210
               </a>
             </div>
@@ -531,7 +665,10 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Email Us</h3>
               <p className="mb-2">For detailed inquiries and support</p>
-              <a href="mailto:info@aquapure.com" className="text-xl font-bold hover:underline">
+              <a
+                href="mailto:info@aquapure.com"
+                className="text-xl font-bold hover:underline"
+              >
                 info@aquapure.com
               </a>
             </div>
@@ -541,7 +678,9 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Visit Us</h3>
               <p className="mb-2">Our office location</p>
-              <p className="text-xl font-bold">123 Main Road, Ranchi, Jharkhand 834001</p>
+              <p className="text-xl font-bold">
+                123 Main Road, Ranchi, Jharkhand 834001
+              </p>
             </div>
           </div>
         </div>
@@ -552,16 +691,24 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">AquaPure RO Services</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                AquaPure RO Services
+              </h3>
               <p className="text-gray-400">
-                Providing clean water solutions since 2010. We are committed to ensuring safe drinking water for every
-                household.
+                Providing clean water solutions since 2010. We are committed to
+                ensuring safe drinking water for every household.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                {["Services", "Installation", "Booking", "Testimonials", "Contact"].map((item) => (
+                {[
+                  "Services",
+                  "Installation",
+                  "Booking",
+                  "Testimonials",
+                  "Contact",
+                ].map((item) => (
                   <li key={item}>
                     <button
                       onClick={() => scrollToSection(item.toLowerCase())}
@@ -593,10 +740,13 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 pt-6 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} AquaPure RO Services. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} AquaPure RO Services. All rights
+              reserved.
+            </p>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
