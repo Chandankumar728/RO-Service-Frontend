@@ -1,243 +1,222 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import Page from '@/components/helmet-page';
 import { useApi, usePutMutation } from '@/hooks/useCustomQuery';
 import { roApi } from '@/lib';
 import PaginationComponent from '@/components/pagination';
 import SearchBox from '@/components/search-box';
-import { Eye, PencilIcon, Trash, Plus } from 'lucide-react';
+import { Eye, X } from 'lucide-react';
 import LoaderList from '@/components/loader-list';
-import {
-  Tabs,
-  TabsContent,
-  // TabsContent,
-  TabsList,
-  TabsTrigger
-} from '@/components/ui/tabs';
-import { Confirm } from '@/components/react-confirm-box';
-import toast from 'react-hot-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OverLayLoader from '@/components/loaders/OverLayLoader';
 import { I_BOOKING_LIST } from '../../admin/ro-booking-list/type';
+import CancelBooking from '@/components/cancel-booking/CancelBooking';
 
-export default function MemberList() {
+type StatusMapType = {
+  [key: string]: string;
+};
+
+export default function BookingList() {
   const location = useLocation();
   const searchParam = new URLSearchParams(location.search);
-  const memberStatus = searchParam.get('member-status');
+  const bookingStatus = searchParam.get('booking-status');
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState(memberStatus ?? '');
+  const [status, setStatus] = useState(bookingStatus ?? '');
   const deleteMutation = usePutMutation({});
 
   const bookingListData = useApi<I_BOOKING_LIST>({
     api: `${roApi.getBookingListByTechnicianId}?page=${page}&limit=${limit}&q=${search}`,
-    key: 'getBookingListByTechnicianId',
+    key: 'getBookingListByTechnicianIdjhbjhbjhbjh',
     value: [page, limit],
     options: {
       enabled: true
     }
   });
 
-  const renderBookings = (status:string) => {
-    const bookingList = status=='all'?bookingListData.data?.data?.docs:
-    bookingListData.data?.data?.docs?.filter(item=>item?.status == status);
-    return(
-      <>
-        {/* line */}
-      <div className="border-t border-secondary mt-1 mb-1"></div>
-      {/* member list */}
-      <LoaderList
-        dataLength={bookingListData.data?.data?.docs.length!}
-        isLoading={bookingListData.isFetching}
-      >
-        {/*  */}
-        <div className="grid grid-cols-1 gap-3 mt-2">
-          {bookingList?.map((data, index) => (
-            <Card
-              key={index + 1}
-              // className=" shadow-none rounded-2xl bg-secondary"
-            >
-              <div className="p-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center  ">
-                  
-                    <div className="ml-1">
-                      <div className="text-primary font-semibold text-sm flex gap-2">
-                        <h1> {data?.fullName}</h1>
-                        <h1 className="mt-1.5">
-                          {data?.status == 'Completed' ? (
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          ) : (
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          )}
-                        </h1>
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'Completed':
+        return 'bg-green-100 text-green-800 border-green-300';
+      case 'Pending':
+        return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-800 border-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const renderBookings = (filterStatus: string) => {
+    const bookingList =
+      filterStatus === 'all'
+        ? bookingListData.data?.data?.docs
+        : bookingListData.data?.data?.docs?.filter(
+            (item) => item?.status === filterStatus
+          );
+
+    return (
+      <div className="space-y-4 mt-4">
+        <LoaderList
+          dataLength={bookingListData.data?.data?.docs?.length || 0}
+          isLoading={bookingListData.isFetching}
+        >
+          {bookingList?.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No bookings found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {bookingList?.map((booking, index) => (
+                <Card
+                  key={index}
+                  className="overflow-hidden hover:shadow-md transition-shadow duration-200"
+                >
+                  <CardContent className="p-0">
+                    <div className="p-4 flex flex-col space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold text-base">
+                            {booking?.fullName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {booking?.phoneNumber}
+                          </p>
+                        </div>
+                        <Badge
+                          className={`${getStatusColor(
+                            booking?.status
+                          )} border px-2 py-1`}
+                        >
+                          {booking?.status}
+                        </Badge>
                       </div>
-                      <div className="text-primary font-bold ">
-                        <h1 className="text-muted-foreground text-xs">
-                          {data?.phoneNumber}
-                        </h1>
+
+                      <div className="flex justify-between items-center pt-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Application ID
+                          </p>
+                          <p className="font-medium text-sm">
+                            {booking?.applicationNo}
+                          </p>
+                        </div>
+                        <div className="flex space-x-2">
+                          {booking?.status === 'Pending' && (
+                            <CancelBooking
+                              id={booking?._id}
+                              refetch={bookingListData.refetch}
+                            >
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="flex items-center gap-1 h-7"
+                              >
+                                <X size={14} />
+                                <span>Cancel</span>
+                              </Button>
+                            </CancelBooking>
+                          )}
+                          <Button
+                            onClick={() =>
+                              navigate(
+                                `/ro-service/tech-booking-details/${booking?._id}`
+                              )
+                            }
+                            size="sm"
+                            variant="outline"
+                            className="flex items-center gap-1 h-7"
+                          >
+                            <Eye size={14} />
+                            <span>View</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div>
-                    {/* using moment  */}
-                    <h1 className="text-primary font-semibold text-sm">
-                      {data?.applicationNo}
-                    </h1>
-                    <small className="text-muted-foreground font-bold text-xs">
-                      Application ID
-                    </small>
-                  </div>
-                </div>
-              </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-              
-
-              <div className="flex items-center justify-between px-4 mb-4 gap-3">
-              
-                
-                <Button
-                onClick={
-                  () =>
-                    navigate(
-                      `/ro-service/tech-booking-details/${data?._id}`
-                    )
-                }
-                  size={'sm'}
-                  variant="outline"
-                  className={
-                    data?.status == 'Cancelled'
-                      ? ' text-red-700 border-red-700 w-full h-6'
-                      : ' text-green-700 border-green-700 w-full h-6'
-                  }
-                  
-                >
-                 View
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {/* pagination */}
-        <div className="flex justify-end mt-3">
-          <PaginationComponent
-            page={page}
-            perPage={limit}
-            totalPage={bookingListData.data?.data.totalDocs}
-            hasNextPage={bookingListData.data?.data?.hasNextPage}
-            hasPrevPage={bookingListData.data?.data.hasPrevPage}
-            setPage={setPage}
-            setPerPage={setLimit}
-          />
-        </div>
-      </LoaderList>
-      </>
-    )
-  }
+          <div className="flex justify-end mt-6">
+            <PaginationComponent
+              page={page}
+              perPage={limit}
+              totalPage={bookingListData.data?.data.totalDocs}
+              hasNextPage={bookingListData.data?.data?.hasNextPage}
+              hasPrevPage={bookingListData.data?.data.hasPrevPage}
+              setPage={setPage}
+              setPerPage={setLimit}
+            />
+          </div>
+        </LoaderList>
+      </div>
+    );
+  };
 
   return (
     <Page title="Booking List">
       {deleteMutation.isPending && <OverLayLoader />}
-      <div className="flex items-center justify-between mt-4">
-        <h1 className="text-base font-semibold text-muted-foreground">
-          Booking List({bookingListData.data?.data.totalDocs})
-        </h1>
 
-        
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold">Booking List</h1>
+            <p className="text-muted-foreground">
+              {bookingListData.data?.data.totalDocs || 0} total bookings
+            </p>
+          </div>
+
+          <SearchBox
+            search={search}
+            setSearch={setSearch}
+            refetch={bookingListData.refetch}
+            isFetching={bookingListData.isLoading}
+            setPage={setPage}
+          />
+        </div>
       </div>
 
-      <div className="border-t border-secondary mt-3 mb-2"></div>
+      <Tabs
+        defaultValue="0"
+        className="w-full"
+        onValueChange={(value) => {
+          const statusMap: StatusMapType = {
+            '0': 'all',
+            '1': 'Pending',
+            '2': 'Completed',
+            '3': 'Cancelled'
+          };
+          setStatus(statusMap[value] || '');
+          setPage(1);
+        }}
+      >
+        <TabsList className="w-full mb-4 bg-muted/50">
+          <TabsTrigger value="0" className="flex-1 py-3 rounded-md">
+            All
+          </TabsTrigger>
+          <TabsTrigger value="1" className="flex-1 py-3 rounded-md">
+            Pending
+          </TabsTrigger>
+          <TabsTrigger value="2" className="flex-1 py-3 rounded-md">
+            Completed
+          </TabsTrigger>
+          <TabsTrigger value="3" className="flex-1 py-3 rounded-md">
+            Cancelled
+          </TabsTrigger>
+        </TabsList>
 
-      <SearchBox
-        search={search}
-        setSearch={setSearch}
-        refetch={bookingListData.refetch}
-        isFetching={bookingListData.isLoading}
-        setPage={setPage}
-      />
-
-      {/* tabbar */}
-      <div className="mt-4 overflow-x-hidden">
-        <Tabs defaultValue={'0'} className="w-full">
-          <TabsList className="w-full">
-          <TabsTrigger
-              className={`w-full`}
-              value="0"
-              onClick={() => {
-                setStatus('');
-                setLimit(5);
-                setPage(1);
-              }}
-            >
-              All
-            </TabsTrigger>
-            <TabsTrigger
-              className={`w-full `}
-              value="1"
-              onClick={() => {
-                setStatus('1');
-                setLimit(5);
-                setPage(1);
-              }}
-            >
-              Pending
-            </TabsTrigger>
-            <TabsTrigger
-              className={`w-full`}
-              value="2"
-              onClick={() => {
-                setStatus('2');
-                setLimit(5);
-                setPage(1);
-              }}
-            >
-              Comleted
-            </TabsTrigger>
-            <TabsTrigger
-              className={`w-full`}
-              value="3"
-              onClick={() => {
-                setStatus('3');
-                setLimit(5);
-                setPage(1);
-              }}
-            >
-              Cancelled
-            </TabsTrigger>
-            
-          </TabsList>
-          <TabsContent
-            value="0"
-            className="text-muted-foreground font-semibold"
-          >
-            {renderBookings('all')}
-          </TabsContent>
-          <TabsContent
-            value="1"
-            className="text-muted-foreground font-semibold"
-          >
-            {renderBookings('Pending')}
-          </TabsContent>
-          <TabsContent
-            value="2"
-            className="text-muted-foreground font-semibold"
-          >
-            {renderBookings('Completed')}
-          </TabsContent>
-          <TabsContent
-            value="3"
-            className="text-muted-foreground font-semibold"
-          >
-            {renderBookings('Cancelled')}
-          </TabsContent>
-        </Tabs>
-      </div>
-      
+        <TabsContent value="0">{renderBookings('all')}</TabsContent>
+        <TabsContent value="1">{renderBookings('Pending')}</TabsContent>
+        <TabsContent value="2">{renderBookings('Completed')}</TabsContent>
+        <TabsContent value="3">{renderBookings('Cancelled')}</TabsContent>
+      </Tabs>
     </Page>
   );
 }
