@@ -64,6 +64,7 @@ export const roApi = {
   deleteBooking:"/booking/delete-booking-by-id",
   findBookingByApplicationNo:"/booking/track-applicationByNo",
   getBookingListByTechnicianId:"/booking/get-booking-list-by-technician-id",
+  payBooking:'/booking/pay-booking-item',
 
   getAllTechnicianOnly: '/technician/get-all-technician',
 } as const;

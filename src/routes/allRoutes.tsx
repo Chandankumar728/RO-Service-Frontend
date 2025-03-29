@@ -55,6 +55,7 @@ const BookingListAdmin = lazyWithRetries(() => import('@/pages/ro-service/admin/
 // ------------------------------Tecnician--------------------------------
 const TecnicianHome = lazyWithRetries(() => import('@/pages/ro-service/tecnician/home'));
 const BookingList = lazyWithRetries(() => import('@/pages/ro-service/tecnician/booking-list'));
+const TechBookingDetails = lazyWithRetries(() => import('@/pages/ro-service/tecnician/booking-details'));
 
 
 
@@ -112,9 +113,16 @@ const routes: Route[] = [
       },
       {
         id: '2',
-        name: 'Home',
+        name: 'Booking List',
         path: 'tech-booking-list',
         element: <BookingList />,
+        exact: true
+      },
+      {
+        id: '3',
+        name: 'View Booking Details',
+        path: 'tech-booking-details/:id',
+        element: <TechBookingDetails />,
         exact: true
       },
     ]
