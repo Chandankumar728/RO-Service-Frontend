@@ -26,7 +26,7 @@ import SearchBox from "@/components/search-box";
 import Spinner from "@/components/loaders/Spinner";
 import toast from "react-hot-toast";
 import AssignTechnician from "./AssignTechnician";
-
+import ViewModal from "./ViewModal";
 export default function RoBooking() {
   const [page, setPage] = useState<number>(1);
   const mutate = usePutMutation({});
@@ -38,6 +38,10 @@ export default function RoBooking() {
   const [techOpen, setTechOpen] = useState(false);
   const [techEdit, setTechEdit] = useState(false);
   const [techId, setTechId] = useState("");
+  const [viewDetails, setviewDetails] = useState(false);
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
+  const [viewDetailsId, setviewDetailsId] = useState("");
+  
 
   const bookingData = useApi<I_BOOKING_LIST>({
     api: `${roApi.getAllBookingList}?page=${page}&limit=${perPage}&q=${search}`,
@@ -53,6 +57,12 @@ export default function RoBooking() {
     setTechOpen(true);
     setId(bookingId);
     setTechId(techId);
+  };
+  const handleViewDetails = async (bookingId: string,) => {
+    setviewDetails(true);
+    setViewDetailsOpen(true);
+    setviewDetailsId(bookingId);
+   
   };
 
   return (
@@ -74,6 +84,13 @@ export default function RoBooking() {
         edit={techEdit}
         setEdit={setTechEdit}
         techId={techId ?? ""}
+        refetch={bookingData.refetch}
+      />
+      <ViewModal
+        open={viewDetailsOpen}
+        setOpen={setViewDetailsOpen}
+        title={"View Booking Details"}
+        id={viewDetailsId}
         refetch={bookingData.refetch}
       />
       <div className="grid auto-rows-max items-start gap-4 md:gap-2 lg:col-span-2">
@@ -116,14 +133,9 @@ export default function RoBooking() {
                       <TableHead className="">#</TableHead>
                       <TableHead className="">Application No</TableHead>
                       <TableHead className="">Full Name</TableHead>
-                      <TableHead className="">Full Address</TableHead>
-                      <TableHead className="">Mobile No</TableHead>
-                      <TableHead className="">Additional Info</TableHead>
-                      <TableHead className="">Prefered Date</TableHead>
                       <TableHead className="">Assign Technician</TableHead>
                       <TableHead className="">Assign Date</TableHead>
                       <TableHead className="">Assign Time</TableHead>
-                      <TableHead className="">Created at</TableHead>
                       <TableHead className="">Status</TableHead>
                       <TableHead className="">Action</TableHead>
                       {/* <TableHead>Action</TableHead> */}
@@ -137,10 +149,10 @@ export default function RoBooking() {
                         </TableCell>
                         <TableCell>{booking?.applicationNo}</TableCell>
                         <TableCell className="font-semibold">{booking?.fullName}</TableCell>
-                        <TableCell>{booking?.address}</TableCell>
-                        <TableCell className="font-semibold">{booking?.phoneNumber}</TableCell>
-                        <TableCell>{booking?.additionalInfo}</TableCell>
-                        <TableCell>{booking?.preferredDate}</TableCell>
+                     
+                       
+                 
+                       
                         <TableCell className="text-green-600 font-semibold ">
                           {booking?.technician?.fullName ?? "Not Assigned"}
                         </TableCell>
@@ -148,11 +160,7 @@ export default function RoBooking() {
                           {booking?.assignDate ?? "Not Assigned"}
                         </TableCell>
                         <TableCell>
-                          {booking?.assigntime ?? "Not Assigned"}
-                        </TableCell>
-
-                        <TableCell>
-                          {moment(booking?.createdAt).format("DD-MM-YYYY")}
+                          {booking?.aasigntime ?? "Not Assigned"}
                         </TableCell>
                         <TableCell>
                           <span
@@ -184,6 +192,17 @@ export default function RoBooking() {
                             }
                           >
                             Assign Technician
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size={"sm"}
+                            className="text-xs"
+                            onClick={() =>
+                              handleViewDetails(booking?._id)
+                            }
+                          >
+                            View
                           </Button>
                         </TableCell>
                       </TableRow>

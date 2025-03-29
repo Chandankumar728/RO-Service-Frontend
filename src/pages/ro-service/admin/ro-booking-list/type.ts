@@ -16,6 +16,12 @@ export type technicianData ={
   fullImgUrl: string;
   imageUrl: string;
 }
+export type Service = {
+  _id: string;
+  serviceTypeName: string;
+  
+};
+
 export type I_BOOKING_TYPE = {
   _id: string;
   fullName: string;
@@ -30,10 +36,12 @@ export type I_BOOKING_TYPE = {
   createdAt: string;
   updatedAt: string;
   assignDate: string;
-  assigntime: string;
+  createdBy: string;
+  aasigntime: string;
   __v: number;
   technicianId: string;
   technician: technicianData
+  service: Service
 }
 
 

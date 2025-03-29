@@ -9,6 +9,7 @@ import {
   RHFTextField,
   FormProviders,
   RHFTextArea,
+  RHFSelectField,
 } from "@/components/forms";
 import { Separator } from "@/components/ui/separator";
 import EditDialogBox from "@/components/edit-dialog-box";
@@ -28,6 +29,7 @@ const schema = yup.object().shape({
   serviceType: yup.string().required("service is required"),
   preferredDate: yup.string().required("date is required"),
   additionalInfo: yup.string().required("message is required"),
+  createdBy: yup.string(),
 });
 type FormData = yup.InferType<typeof schema>;
 
@@ -69,11 +71,20 @@ export default function BookingForm({
       serviceType: "",
       preferredDate: "",
       additionalInfo: "",
+      createdBy:"Admin",
     },
     resolver: yupResolver(schema),
   });
 
+   const { data : service } = useApi<any>({
+      api: `${roApi.getAllService}`,
+      options: {
+        enabled: true,
+      },
+    });
+
   const onSubmit = async (data: FormData) => {
+    
     try {
       if (edit && data) {
         const res = await putMutation.mutateAsync({
@@ -131,6 +142,7 @@ export default function BookingForm({
         serviceType: "",
         preferredDate: "",
         additionalInfo: "",
+        createdBy:"Admin",
       });
     }
   }, [edit, data]);
@@ -148,9 +160,6 @@ export default function BookingForm({
         methods={methods}
         onSubmit={methods.handleSubmit(onSubmit)}
       >
-
-
-
         <div className="grid grid-cols-1 gap-x-2 gap-y-4">
           <div>
             <RHFTextField name="fullName" placeholder="Enter your  name" />
@@ -165,13 +174,28 @@ export default function BookingForm({
             <RHFTextField name="email" placeholder="Enter your  email" />
           </div>
           <div>
-            <RHFTextField name="preferredDate" placeholder="Enter your  preferredDate" />
-          </div>
-          <div>
-            <RHFTextField name="additionalInfo" placeholder="Enter your  additionalInfo" />
+            <RHFSelectField
+              name="serviceType"
+              data={service?.data?.docs?.map((item: any) => ({
+                label: item.serviceTypeName,
+                value: item._id,
+              }))}
+            />
           </div>
 
-         
+          <div>
+            <RHFTextField
+              name="preferredDate"
+              placeholder="Enter your  preferredDate"
+            />
+          </div>
+          <div>
+            <RHFTextField
+              name="additionalInfo"
+              placeholder="Enter your  additionalInfo"
+            />
+          </div>
+
           <Separator />
           <div>
             <ButtonLoading

@@ -36,7 +36,7 @@ export default function DialogBox({
           open ? 'flex' : 'hidden'
         } fixed left-0 right-0 top-0 z-50 h-[calc(100%-1rem)] max-h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden md:inset-0`}
       >
-        <div className='relative max-h-full w-full max-w-md p-4'>
+        <div className='relative max-h-full w-full max-w-xl p-4'>
           {/* Modal content */}
           <div className='relative rounded-lg bg-white shadow dark:bg-gray-700'>
             {/* Modal header */}

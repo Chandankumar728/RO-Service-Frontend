@@ -108,7 +108,7 @@ export default function AssignTechnician({
       );
       methods?.setValue(
         "assignTime",
-        getBookingByIdData?.data?.data?.assigntime
+        getBookingByIdData?.data?.data?.aasigntime
       );
     }
   }, [getBookingByIdData?.data]);
